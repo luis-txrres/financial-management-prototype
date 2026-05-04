@@ -7,6 +7,8 @@ import Budgets from "./pages/Budgets";
 import Goals from "./pages/Goals";
 import BudgetAlert from "./pages/BudgetAlert";
 import Layout from "./components/Layout";
+import EditBudget from "./pages/EditBudget";
+import CreateBudget from "./pages/CreateBudget";
 
 export const router = createBrowserRouter([
   {
@@ -45,6 +47,15 @@ export const router = createBrowserRouter([
         path: "budgets/:id/alert",
         Component: BudgetAlert,
       },
+      {
+        path: "budgets/:id/edit",
+        Component: EditBudget
+      },
+      {
+        path: "/budgets/create",
+        element: <CreateBudget />,
+      }
+
     ],
   },
 ]);

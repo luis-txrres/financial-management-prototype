@@ -5,70 +5,24 @@ import { Progress } from "../components/ui/progress";
 import { AlertCircle, TrendingDown, TrendingUp, Plus } from "lucide-react";
 import { Badge } from "../components/ui/badge";
 import { toast } from "sonner";
+import { useBudgets } from "../../context/BudgetContext";
 
 export default function Budgets() {
   const navigate = useNavigate();
 
-  const budgets = [
-    {
-      id: 1,
-      name: "Groceries",
-      spent: 450.56,
-      limit: 600,
-      period: "Monthly",
-      hasAlert: false,
-      trend: "down",
-      trendPercent: 5,
-    },
-    {
-      id: 2,
-      name: "Entertainment",
-      spent: 285.98,
-      limit: 300,
-      period: "Monthly",
-      hasAlert: true,
-      trend: "up",
-      trendPercent: 12,
-    },
-    {
-      id: 3,
-      name: "Transportation",
-      spent: 150.00,
-      limit: 400,
-      period: "Monthly",
-      hasAlert: false,
-      trend: "down",
-      trendPercent: 8,
-    },
-    {
-      id: 4,
-      name: "Dining Out",
-      spent: 220.45,
-      limit: 350,
-      period: "Monthly",
-      hasAlert: false,
-      trend: "up",
-      trendPercent: 3,
-    },
-    {
-      id: 5,
-      name: "Shopping",
-      spent: 180.00,
-      limit: 250,
-      period: "Monthly",
-      hasAlert: false,
-      trend: "up",
-      trendPercent: 15,
-    },
-  ];
+  const { budgets, deleteBudget } = useBudgets();
 
-  const totalBudget = budgets.reduce((sum, b) => sum + b.limit, 0);
-  const totalSpent = budgets.reduce((sum, b) => sum + b.spent, 0);
+  const totalBudget = budgets.reduce((sum: number, b: any) => sum + b.limit, 0);
+  const totalSpent = budgets.reduce((sum: number, b: any) => sum + b.spent, 0);
   const overallPercentage = (totalSpent / totalBudget) * 100;
 
-  const handleCreateBudget = () => {
-    toast.info("Create Budget", {
-      description: "Budget creation feature coming soon",
+  const handleCreateBudget = () => navigate("/budgets/create");
+
+  const handleDelete = (id: number, name: string) => {
+    deleteBudget(id);
+
+    toast.success("Budget deleted", {
+      description: `${name} has been removed`,
     });
   };
 
@@ -104,7 +58,7 @@ export default function Budgets() {
       </Card>
 
       <div className="space-y-4">
-        {budgets.map((budget) => {
+        {budgets.map((budget: any) => {
           const percentage = (budget.spent / budget.limit) * 100;
           const remaining = budget.limit - budget.spent;
           const isNearLimit = percentage >= 90;
@@ -150,6 +104,26 @@ export default function Budgets() {
                       ${budget.limit.toFixed(2)} limit
                     </span>
                   </div>
+                </div>
+
+                <div>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => navigate(`/budgets/${budget.id}/edit`)}
+                    >
+                      Edit Budget
+                    </Button>
+                </div>
+                
+                <div>
+                    <Button
+                      variant="outline"
+                      className="w-full text-red-500 border-red-300 hover:bg-red-50"
+                      onClick={() => handleDelete(budget.id, budget.name)}
+                    >
+                      Delete Budget
+                    </Button>
                 </div>
 
                 {budget.hasAlert && (
