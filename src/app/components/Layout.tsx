@@ -1,7 +1,29 @@
-import { Outlet, NavLink } from "react-router";
-import { LayoutDashboard, Receipt, Wallet, Building2, Target } from "lucide-react";
+import { Outlet, NavLink, useNavigate } from "react-router";
+import {
+  LayoutDashboard,
+  Receipt,
+  Wallet,
+  Building2,
+  Target,
+  LogOut,
+} from "lucide-react";
+import { toast } from "sonner";
 
 export default function Layout() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("username");
+    localStorage.removeItem("email");
+
+    toast.success("Signed out", {
+      description: "Your demo session has been cleared.",
+    });
+
+    navigate("/login");
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
       <main className="flex-1 pb-20 overflow-auto">
@@ -14,9 +36,7 @@ export default function Layout() {
             to="/dashboard"
             className={({ isActive }) =>
               `flex flex-col items-center justify-center flex-1 h-full gap-1 transition-colors ${
-                isActive
-                  ? "text-blue-600"
-                  : "text-slate-600"
+                isActive ? "text-blue-600" : "text-slate-600"
               }`
             }
           >
@@ -28,9 +48,7 @@ export default function Layout() {
             to="/accounts"
             className={({ isActive }) =>
               `flex flex-col items-center justify-center flex-1 h-full gap-1 transition-colors ${
-                isActive
-                  ? "text-blue-600"
-                  : "text-slate-600"
+                isActive ? "text-blue-600" : "text-slate-600"
               }`
             }
           >
@@ -42,9 +60,7 @@ export default function Layout() {
             to="/transactions"
             className={({ isActive }) =>
               `flex flex-col items-center justify-center flex-1 h-full gap-1 transition-colors ${
-                isActive
-                  ? "text-blue-600"
-                  : "text-slate-600"
+                isActive ? "text-blue-600" : "text-slate-600"
               }`
             }
           >
@@ -56,9 +72,7 @@ export default function Layout() {
             to="/budgets"
             className={({ isActive }) =>
               `flex flex-col items-center justify-center flex-1 h-full gap-1 transition-colors ${
-                isActive
-                  ? "text-blue-600"
-                  : "text-slate-600"
+                isActive ? "text-blue-600" : "text-slate-600"
               }`
             }
           >
@@ -70,15 +84,22 @@ export default function Layout() {
             to="/goals"
             className={({ isActive }) =>
               `flex flex-col items-center justify-center flex-1 h-full gap-1 transition-colors ${
-                isActive
-                  ? "text-blue-600"
-                  : "text-slate-600"
+                isActive ? "text-blue-600" : "text-slate-600"
               }`
             }
           >
             <Target className="w-6 h-6" />
             <span className="text-xs">Goals</span>
           </NavLink>
+
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex flex-col items-center justify-center flex-1 h-full gap-1 text-slate-600 hover:text-red-600 transition-colors"
+          >
+            <LogOut className="w-6 h-6" />
+            <span className="text-xs">Log out</span>
+          </button>
         </div>
       </nav>
     </div>
