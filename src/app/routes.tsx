@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Accounts from "./pages/Accounts";
@@ -12,21 +12,27 @@ import CreateBudget from "./pages/CreateBudget";
 
 export const router = createBrowserRouter([
   {
+    path: "/",
+    Component: Login,
+  },
+  {
     path: "/login",
     Component: Login,
   },
   {
-    path: "/",
+    path: "/dashboard",
     Component: Layout,
     children: [
       {
         index: true,
         Component: Dashboard,
       },
-      {
-        path: "dashboard",
-        Component: Dashboard,
-      },
+    ],
+  },
+  {
+    path: "/",
+    Component: Layout,
+    children: [
       {
         path: "accounts",
         Component: Accounts,
@@ -49,13 +55,16 @@ export const router = createBrowserRouter([
       },
       {
         path: "budgets/:id/edit",
-        Component: EditBudget
+        Component: EditBudget,
       },
       {
-        path: "/budgets/create",
+        path: "budgets/create",
         element: <CreateBudget />,
-      }
-
+      },
     ],
+  },
+  {
+    path: "*",
+    element: <Navigate to="/" replace />,
   },
 ]);
