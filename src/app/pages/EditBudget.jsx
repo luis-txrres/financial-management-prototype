@@ -73,7 +73,8 @@ export default function EditBudget() {
             />
           </div>
 
-          <Button className="w-full" onClick={handleSave}>
+          <Button className="w-full hover:bg-blue-500 hover:text-white transition-colors" 
+            onClick={handleSave}>
             Save Changes
           </Button>
         </CardContent>
