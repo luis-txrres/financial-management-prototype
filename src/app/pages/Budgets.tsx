@@ -26,6 +26,29 @@ export default function Budgets() {
     });
   };
 
+  const getBudgetStatus = (spent: number, limit: number) => {
+    const percent = (spent / limit) * 100;
+
+    if (percent >= 100) {
+      return {
+        label: "Over Budget",
+        className: "bg-red-100 text-red-700 border-red-200",
+      };
+    }
+
+    if (percent >= 90) {
+      return {
+        label: "Near Limit",
+        className: "bg-amber-100 text-amber-700 border-amber-200",
+      };
+    }
+
+    return {
+      label: "On Track",
+      className: "bg-emerald-100 text-emerald-700 border-emerald-200",
+    };
+  };
+
   return (
     <div className="p-4 md:p-8">
       <div className="flex items-center justify-between mb-6">
@@ -41,15 +64,20 @@ export default function Budgets() {
       <Card className="mb-4">
         <CardHeader>
           <CardTitle className="text-lg">Overall Budget</CardTitle>
-          <CardDescription className="text-sm">Total spending across all categories</CardDescription>
+          <CardDescription className="text-sm">
+            Total spending across all categories
+          </CardDescription>
         </CardHeader>
+
         <CardContent>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-2xl">${totalSpent.toFixed(2)}</span>
               <span className="text-slate-600">of ${totalBudget.toFixed(2)}</span>
             </div>
+
             <Progress value={overallPercentage} className="h-3" />
+
             <p className="text-sm text-slate-600">
               {overallPercentage.toFixed(1)}% of your total monthly budget used
             </p>
@@ -62,6 +90,7 @@ export default function Budgets() {
           const percentage = (budget.spent / budget.limit) * 100;
           const remaining = budget.limit - budget.spent;
           const isNearLimit = percentage >= 90;
+          const status = getBudgetStatus(budget.spent, budget.limit);
 
           return (
             <Card key={budget.id} className={isNearLimit ? "border-amber-500" : ""}>
@@ -76,6 +105,7 @@ export default function Budgets() {
                     </CardTitle>
                     <CardDescription>{budget.period} budget</CardDescription>
                   </div>
+
                   <Badge variant={budget.trend === "up" ? "destructive" : "secondary"}>
                     {budget.trend === "up" ? (
                       <TrendingUp className="w-3 h-3 mr-1" />
@@ -86,16 +116,26 @@ export default function Budgets() {
                   </Badge>
                 </div>
               </CardHeader>
+
               <CardContent className="space-y-4">
+                <div className="flex items-center justify-between rounded-md border p-3 bg-slate-50">
+                  <span className="text-sm font-medium">Budget Status</span>
+                  <Badge variant="outline" className={status.className}>
+                    {status.label}
+                  </Badge>
+                </div>
+
                 <div>
                   <div className="flex justify-between mb-2">
                     <span className="text-sm text-slate-600">Spent</span>
                     <span className="font-medium">${budget.spent.toFixed(2)}</span>
                   </div>
+
                   <Progress
                     value={percentage}
                     className={`h-2 ${isNearLimit ? "bg-amber-100" : ""}`}
                   />
+
                   <div className="flex justify-between mt-2">
                     <span className="text-sm text-slate-600">
                       ${remaining.toFixed(2)} remaining
@@ -107,23 +147,23 @@ export default function Budgets() {
                 </div>
 
                 <div>
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => navigate(`/budgets/${budget.id}/edit`)}
-                    >
-                      Edit Budget
-                    </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => navigate(`/budgets/${budget.id}/edit`)}
+                  >
+                    Edit Budget
+                  </Button>
                 </div>
-                
+
                 <div>
-                    <Button
-                      variant="outline"
-                      className="w-full text-red-500 border-red-300 hover:bg-red-50"
-                      onClick={() => handleDelete(budget.id, budget.name)}
-                    >
-                      Delete Budget
-                    </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full text-red-500 border-red-300 hover:bg-red-50"
+                    onClick={() => handleDelete(budget.id, budget.name)}
+                  >
+                    Delete Budget
+                  </Button>
                 </div>
 
                 {budget.hasAlert && (
