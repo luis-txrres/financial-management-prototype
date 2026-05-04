@@ -116,7 +116,39 @@ export default function BudgetAlert() {
             </div>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Recommended Actions</CardTitle>
+            <CardDescription>
+              Suggested next steps based on this budget alert
+            </CardDescription>
+          </CardHeader>
 
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 bg-slate-50 rounded-lg border">
+                <p className="font-medium mb-1">Review recent purchases</p>
+                <p className="text-sm text-slate-600">
+                  Check which entertainment transactions caused this budget alert.
+                </p>
+              </div>
+
+              <div className="p-4 bg-slate-50 rounded-lg border">
+                <p className="font-medium mb-1">Slow spending</p>
+                <p className="text-sm text-slate-600">
+                  Only ${budgetData.remaining.toFixed(2)} remains, so avoid extra entertainment spending this month.
+                </p>
+              </div>
+
+              <div className="p-4 bg-slate-50 rounded-lg border">
+                <p className="font-medium mb-1">Adjust budget if needed</p>
+                <p className="text-sm text-slate-600">
+                  If this spending is expected, update the budget limit so it better matches the user’s needs.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         <Card>
           <CardHeader>
             <CardTitle>Spending Insights</CardTitle>
