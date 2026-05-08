@@ -1,29 +1,17 @@
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableRow, TableHeader } from "../components/ui/table";
 import { Badge } from "../components/ui/badge";
 import { Search, Filter, Download, Plus } from "lucide-react";
 import { toast } from "sonner";
+import { useTransactions } from "../../context/TransactionContext";
 
 export default function Transactions() {
+  const { transactions } = useTransactions();
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
-
-  const transactions = [
-    { id: 1, date: "2026-05-02", merchant: "Whole Foods", category: "Groceries", amount: -87.32, status: "completed" },
-    { id: 2, date: "2026-05-02", merchant: "Shell Gas Station", category: "Transportation", amount: -52.00, status: "completed" },
-    { id: 3, date: "2026-05-01", merchant: "Netflix", category: "Entertainment", amount: -15.99, status: "completed" },
-    { id: 4, date: "2026-05-01", merchant: "Starbucks", category: "Dining", amount: -8.75, status: "completed" },
-    { id: 5, date: "2026-04-30", merchant: "Salary Deposit", category: "Income", amount: 3500.00, status: "completed" },
-    { id: 6, date: "2026-04-29", merchant: "Amazon", category: "Shopping", amount: -124.99, status: "completed" },
-    { id: 7, date: "2026-04-28", merchant: "Spotify", category: "Entertainment", amount: -9.99, status: "completed" },
-    { id: 8, date: "2026-04-27", merchant: "Trader Joe's", category: "Groceries", amount: -63.24, status: "completed" },
-    { id: 9, date: "2026-04-26", merchant: "Uber", category: "Transportation", amount: -23.50, status: "pending" },
-    { id: 10, date: "2026-04-25", merchant: "Movie Theater", category: "Entertainment", amount: -28.00, status: "completed" },
-  ];
 
   const filteredTransactions = transactions.filter((t) => {
     const matchesSearch = t.merchant.toLowerCase().includes(searchTerm.toLowerCase());

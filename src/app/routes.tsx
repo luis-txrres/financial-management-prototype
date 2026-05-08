@@ -9,6 +9,8 @@ import BudgetAlert from "./pages/BudgetAlert";
 import Layout from "./components/Layout";
 import EditBudget from "./pages/EditBudget";
 import CreateBudget from "./pages/CreateBudget";
+import CreateGoal from "./pages/CreateGoal";
+import EditGoal from "./pages/EditGoal";
 
 export const router = createBrowserRouter([
   {
@@ -33,34 +35,15 @@ export const router = createBrowserRouter([
     path: "/",
     Component: Layout,
     children: [
-      {
-        path: "accounts",
-        Component: Accounts,
-      },
-      {
-        path: "transactions",
-        Component: Transactions,
-      },
-      {
-        path: "budgets",
-        Component: Budgets,
-      },
-      {
-        path: "goals",
-        Component: Goals,
-      },
-      {
-        path: "budgets/:id/alert",
-        Component: BudgetAlert,
-      },
-      {
-        path: "budgets/:id/edit",
-        Component: EditBudget,
-      },
-      {
-        path: "budgets/create",
-        element: <CreateBudget />,
-      },
+      { path: "accounts",          Component: Accounts },
+      { path: "transactions",      Component: Transactions },
+      { path: "budgets",           Component: Budgets },
+      { path: "budgets/:id/alert", Component: BudgetAlert },
+      { path: "budgets/:id/edit",  Component: EditBudget },
+      { path: "budgets/create",    element: <CreateBudget /> },
+      { path: "goals",             Component: Goals },
+      { path: "goals/create",      Component: CreateGoal },
+      { path: "goals/:id/edit",    Component: EditGoal },
     ],
   },
   {
