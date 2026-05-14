@@ -1,8 +1,8 @@
+** Used Claude to generate this README just for easier build understanding and under time constraints **
+
 # Financial Management Prototype
 
 A financial management web app prototype built with React, Vite, Tailwind CSS, and shadcn/ui. Originally designed in Figma.
-
-**Figma source:** [Financial Management Prototype](https://www.figma.com/design/pdqGG46udhhwtRE8cc4vuI/Financial-Management-Prototype)
 
 ## Features
 
