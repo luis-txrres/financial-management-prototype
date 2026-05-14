@@ -3,139 +3,188 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../co
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Badge } from "../components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
-import { Building2, CreditCard, PiggyBank, Plus, Shield, X } from "lucide-react";
+import { Building2, CreditCard, PiggyBank, Plus, Shield, X, ChevronRight, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-type AccountType = "Checking" | "Savings" | "Credit";
+type Step = "bank-select" | "credentials" | "mfa" | "linking" | "success" | "error";
 
-interface Account {
-  id: number;
-  name: string;
-  type: AccountType;
-  institution: string;
-  balance: number;
-  lastSync: string;
-  status: string;
-}
+const BANKS = [
+  { id: "chase",  name: "Chase",           supported: true  },
+  { id: "bofa",   name: "Bank of America", supported: true  },
+  { id: "wells",  name: "Wells Fargo",     supported: true  },
 
-const ICON_MAP = {
-  Checking: Building2,
-  Savings: PiggyBank,
-  Credit: CreditCard,
+];
+
+const ERRORS: Record<string, { title: string; desc: string; retry: boolean }> = {
+  unsupported:   { title: "Bank not supported",    desc: "This bank isn't currently supported.",                                    retry: false },
+  bad_creds:     { title: "Incorrect credentials", desc: "The username or password is incorrect. Please try again.",                retry: true  },
+  token_failed:  { title: "Linking failed",        desc: "Unable to complete account linking. No data has been stored.",            retry: false },
 };
 
-function AddAccountModal({ onClose, onAdd }: {
-  onClose: () => void;
-  onAdd: (account: Account) => void;
-}) {
-  const [name, setName] = useState("");
-  const [institution, setInstitution] = useState("");
-  const [type, setType] = useState<AccountType>("Checking");
-  const [balance, setBalance] = useState("");
+function AddAccountModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (bank: string) => void }) {
+  const [step, setStep]       = useState<Step>("bank-select");
+  const [bank, setBank]       = useState<{ id: string; name: string } | null>(null);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [mfa, setMfa]         = useState("");
+  const [error, setError]     = useState<string | null>(null);
 
-  const handleSubmit = () => {
-    if (!name.trim() || !institution.trim() || balance === "") {
-      toast.error("Missing fields", { description: "Please fill in all fields." });
-      return;
-    }
+  const selectBank = (b: typeof BANKS[0]) => {
+    if (!b.supported) { setError("unsupported"); setStep("error"); return; }
+    setBank(b);
+    setStep("credentials");
+  };
 
-    onAdd({
-      id: Date.now(),
-      name: name.trim(),
-      institution: institution.trim(),
-      type,
-      balance: Number(balance),
-      lastSync: "Just now",
-      status: "connected",
-    });
+  const submitCredentials = () => {
+    if (!username || !password) return;
+    setStep("mfa");
+  };
 
-    toast.success("Account linked", { description: `${name} has been added to your accounts.` });
-    onClose();
+  const submitMfa = () => {
+    if (!mfa) return;
+    setStep("linking");
+    setTimeout(() => {
+      if (username === "demo") { setError("bad_creds"); setStep("error"); return; }
+      setTimeout(() => setStep("success"), 1500);
+    }, 2000);
+  };
+
+  const retry = () => {
+    setError(null);
+    setStep(error === "bad_creds" ? "credentials" : "bank-select");
+    if (error !== "bad_creds") setBank(null);
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
-        <div className="flex items-center justify-between p-5 border-b">
-          <h2 className="text-lg font-semibold">Link Bank Account</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
-            <X className="w-5 h-5" />
-          </button>
+      <div className="bg-white rounded-xl shadow-lg w-full max-w-sm">
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b">
+          <h2 className="font-semibold">Link Bank Account</h2>
+          <button onClick={onClose}><X className="w-4 h-4 text-slate-400" /></button>
         </div>
 
-        <div className="p-5 space-y-4">
-          <div>
-            <label className="text-sm text-slate-600 block mb-1">Account Name</label>
-            <Input
-              placeholder="e.g., Chase Checking"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
+        {/* Body */}
+        <div className="p-5">
 
-          <div>
-            <label className="text-sm text-slate-600 block mb-1">Institution</label>
-            <Input
-              placeholder="e.g., Chase Bank"
-              value={institution}
-              onChange={(e) => setInstitution(e.target.value)}
-            />
-          </div>
+          {step === "bank-select" && (
+            <div className="space-y-2">
+              <p className="text-sm text-slate-500 mb-3">Select your bank</p>
+              {BANKS.map((b) => (
+                <button key={b.id} onClick={() => selectBank(b)}
+                  className="w-full flex items-center justify-between p-3 rounded-lg border hover:bg-slate-50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <Building2 className="w-4 h-4 text-slate-400" />
+                    <span className="text-sm font-medium">{b.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {!b.supported && <span className="text-xs text-slate-400">Unsupported</span>}
+                    <ChevronRight className="w-4 h-4 text-slate-300" />
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
 
-          <div>
-            <label className="text-sm text-slate-600 block mb-1">Account Type</label>
-            <Select value={type} onValueChange={(v) => setType(v as AccountType)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Checking">Checking</SelectItem>
-                <SelectItem value="Savings">Savings</SelectItem>
-                <SelectItem value="Credit">Credit</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {step === "credentials" && (
+            <div className="space-y-3">
+              <p className="text-sm text-slate-500">Enter your {bank?.name} credentials</p>
+              <Input placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
+              <Input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <p className="text-xs text-slate-400">Tip: use "demo" as username to trigger the error state</p>
+            </div>
+          )}
 
-          <div>
-            <label className="text-sm text-slate-600 block mb-1">Starting Balance</label>
-            <Input
-              type="number"
-              placeholder="e.g., 1500.00"
-              value={balance}
-              onChange={(e) => setBalance(e.target.value)}
-            />
-          </div>
+          {step === "mfa" && (
+            <div className="space-y-3">
+              <p className="text-sm text-slate-500">{bank?.name} sent a code to your phone. Enter it below.</p>
+              <Input placeholder="6-digit code" value={mfa} onChange={(e) => setMfa(e.target.value)} maxLength={6} />
+            </div>
+          )}
+
+          {step === "linking" && (
+            <div className="flex flex-col items-center py-8 gap-3 text-center">
+              <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+              <p className="text-sm font-medium">Linking your account…</p>
+              <p className="text-xs text-slate-400">Authenticating with {bank?.name}</p>
+            </div>
+          )}
+
+          {step === "success" && (
+            <div className="flex flex-col items-center py-8 gap-3 text-center">
+              <CheckCircle2 className="w-8 h-8 text-green-500" />
+              <p className="text-sm font-medium">Account linked!</p>
+              <p className="text-xs text-slate-400">{bank?.name} is connected and syncing.</p>
+            </div>
+          )}
+
+          {step === "error" && error && (
+            <div className="flex flex-col items-center py-8 gap-3 text-center">
+              <AlertCircle className="w-8 h-8 text-red-500" />
+              <p className="text-sm font-medium">{ERRORS[error].title}</p>
+              <p className="text-xs text-slate-400">{ERRORS[error].desc}</p>
+            </div>
+          )}
         </div>
 
-        <div className="p-5 pt-0 space-y-2">
-          <Button className="w-full hover:bg-blue-500 hover:text-white transition-colors" onClick={handleSubmit}>
-            Link Account
-          </Button>
-          <Button variant="outline" className="w-full" onClick={onClose}>
-            Cancel
-          </Button>
+        {/* Footer */}
+        <div className="px-5 pb-5 space-y-2">
+          {step === "credentials" && (
+            <>
+              <Button className="w-full" onClick={submitCredentials} disabled={!username || !password}>Continue</Button>
+              <Button variant="outline" className="w-full" onClick={() => setStep("bank-select")}>Back</Button>
+            </>
+          )}
+          {step === "mfa" && (
+            <>
+              <Button className="w-full" onClick={submitMfa} disabled={!mfa}>Verify</Button>
+              <Button variant="outline" className="w-full" onClick={() => setStep("credentials")}>Back</Button>
+            </>
+          )}
+          {step === "success" && (
+            <Button className="w-full" onClick={() => { onSuccess(bank!.name); onClose(); }}>Done</Button>
+          )}
+          {step === "error" && error && (
+            <>
+              {ERRORS[error].retry && <Button className="w-full" onClick={retry}>Try Again</Button>}
+              <Button variant="outline" className="w-full" onClick={onClose}>Cancel</Button>
+            </>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
+const ICON_MAP = { Checking: Building2, Savings: PiggyBank, Credit: CreditCard };
+
 export default function Accounts() {
   const [showModal, setShowModal] = useState(false);
-  const [accounts, setAccounts] = useState<Account[]>([
-    { id: 1, name: "Chase Checking",  type: "Checking", institution: "Chase Bank",        balance:  8458.50, lastSync: "2 hours ago", status: "connected" },
-    { id: 2, name: "Savings Account", type: "Savings",  institution: "Chase Bank",        balance: 15200.00, lastSync: "2 hours ago", status: "connected" },
-    { id: 3, name: "Credit Card",     type: "Credit",   institution: "American Express",  balance: -1200.00, lastSync: "5 hours ago", status: "connected" },
+  const [accounts, setAccounts] = useState([
+    { id: 1, name: "Chase Checking",  type: "Checking" as const, institution: "Chase Bank",       balance:  8458.50, lastSync: "2 hours ago", status: "connected" },
+    { id: 2, name: "Savings Account", type: "Savings"  as const, institution: "Chase Bank",       balance: 15200.00, lastSync: "2 hours ago", status: "connected" },
+    { id: 3, name: "Credit Card",     type: "Credit"   as const, institution: "American Express", balance: -1200.00, lastSync: "5 hours ago", status: "connected" },
   ]);
 
-  const handleAdd = (account: Account) => {
-    setAccounts((prev) => [...prev, account]);
+  const handleSuccess = (bankName: string) => {
+    setAccounts((prev) => [...prev, {
+      id: Date.now(),
+      name: `${bankName} Checking`,
+      type: "Checking" as const,
+      institution: bankName,
+      balance: 0,
+      lastSync: "Just now",
+      status: "connected",
+    }]);
+    toast.success("Account linked", { description: `${bankName} has been added.` });
   };
 
   return (
     <div className="p-4 md:p-8">
-      {showModal && (
-        <AddAccountModal onClose={() => setShowModal(false)} onAdd={handleAdd} />
-      )}
+      {showModal && <AddAccountModal onClose={() => setShowModal(false)} onSuccess={handleSuccess} />}
 
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -151,7 +200,6 @@ export default function Accounts() {
         {accounts.map((account) => {
           const Icon = ICON_MAP[account.type];
           const isNegative = account.balance < 0;
-
           return (
             <Card key={account.id}>
               <CardHeader>
@@ -165,9 +213,7 @@ export default function Accounts() {
                       <CardDescription>{account.institution}</CardDescription>
                     </div>
                   </div>
-                  <Badge variant="outline" className="text-green-600 border-green-600">
-                    {account.status}
-                  </Badge>
+                  <Badge variant="outline" className="text-green-600 border-green-600">{account.status}</Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -195,9 +241,7 @@ export default function Accounts() {
             <Shield className="w-5 h-5 text-blue-600 mt-0.5" />
             <div>
               <CardTitle className="text-blue-900">Security & Privacy</CardTitle>
-              <CardDescription className="text-blue-700">
-                Your financial data is protected with industry-leading security
-              </CardDescription>
+              <CardDescription className="text-blue-700">Your financial data is protected with industry-leading security</CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -211,3 +255,4 @@ export default function Accounts() {
     </div>
   );
 }
+
